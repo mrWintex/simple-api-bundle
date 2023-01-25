@@ -1,5 +1,5 @@
 <?php
-namespace App\EventSubscriber;
+namespace Wintex\SimpleApiBundle\ExceptionSubscriber;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
