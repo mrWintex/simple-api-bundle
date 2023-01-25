@@ -2,7 +2,10 @@ services:
     _defaults:
         autowire: true
         autoconfigure: true
-         
+        
+    wsab.service.api-endpoint-validator:
+        class: Wintex\SimpleApiBundle\Service\ApiEndpointValidator
+
     wsab.error.subscriber:
         class: Wintex\SimpleApiBundle\EventSubscriber\ExceptionSubscriber
         tags:
@@ -13,8 +16,6 @@ services:
         tags:
             - { name: kernel.event_subscriber }
 
-    wsab.service.api-endpoint-validator:
-        class: Wintex\SimpleApiBundle\Service\ApiEndpointValidator
 
     wsab.controller.api-controller:
         class: Wintex\SimpleApiBundle\Controller\ApiController
