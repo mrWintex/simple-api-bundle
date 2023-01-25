@@ -2,7 +2,7 @@
     "name": "wintex/simple-rest-api",
     "description": "Simple symfony bundle for building REST API services",
     "type": "symfony-bundle",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "autoload": {
         "psr-4": {
             "Wintex\\SimpleRestApi\\": "src/"
