@@ -1,5 +1,5 @@
 <?php
-namespace Wintex\SimpleApiBundle\ExceptionSubscriber;
+namespace Wintex\SimpleApiBundle\EventSubscriber;
 
 use Wintex\SimpleApiBundle\Service\ApiEndpointValidator;
 use Psr\Log\LoggerInterface;
