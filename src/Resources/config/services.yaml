@@ -1,0 +1,19 @@
+services:
+    wsab.error.subscriber:
+        class: Wintex\SimpleApiBundle\EventSubscriber\ExceptionSubscriber
+        tags:
+            - { name: kernel.event_subscriber }
+
+    wsab.request.subscriber:
+        class: Wintex\SimpleApiBundle\EventSubscriber\RequestSubscriber
+        tags:
+            - { name: kernel.event_subscriber }
+
+    wsab.service.api-endpoint-validator:
+        class: Wintex\SimpleApiBundle\Service\ApiEndpointValidator
+
+    wsab.controller.api-controller:
+        class: Wintex\SimpleApiBundle\Controller\ApiController
+        public: true
+        autowire: false
+        autoconfigure: false

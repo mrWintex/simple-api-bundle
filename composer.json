@@ -1,0 +1,22 @@
+{
+    "name": "wintex/simple-rest-api",
+    "description": "Simple symfony bundle for building REST API services",
+    "type": "symfony-bundle",
+    "autoload": {
+        "psr-4": {
+            "Wintex\\SimpleRestApi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vit Prokes"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "symfony/framework-bundle": "^6.2",
+        "pmill/doctrine-array-hydrator": "^0.1.7",
+        "symfony/orm-pack": "^2.3",
+        "symfony/yaml": "^6.2"
+    }
+}
