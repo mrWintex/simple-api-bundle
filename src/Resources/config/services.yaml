@@ -15,8 +15,7 @@ services:
         tags:
             - { name: kernel.event_subscriber }
 
-    wsab.controller.api-controller:
-        class: Wintex\SimpleApiBundle\Controller\ApiController
+    Wintex\SimpleApiBundle\Controller\ApiController:
         public: true
         autowire: false
         autoconfigure: false
