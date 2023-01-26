@@ -17,7 +17,5 @@ services:
 
     Wintex\SimpleApiBundle\Controller\ApiController:
         public: true
-        autowire: false
-        autoconfigure: false
         calls:
             - [setContainer, ["@service_container"]]
