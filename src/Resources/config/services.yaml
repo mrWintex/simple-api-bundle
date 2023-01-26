@@ -3,8 +3,8 @@ services:
         autowire: true
         autoconfigure: true
 
-    wsab.app:
-        resource: '../Service/'
+    wsab.service.api-endpoint-validator:
+        class: Wintex\SimpleApiBundle\Service\ApiEndpointValidator
 
     wsab.error.subscriber:
         class: Wintex\SimpleApiBundle\EventSubscriber\ExceptionSubscriber
@@ -13,6 +13,8 @@ services:
 
     wsab.request.subscriber:
         class: Wintex\SimpleApiBundle\EventSubscriber\RequestSubscriber
+        arguments: 
+            $apiValidator: '@wsab.service.api-endpoint-validator'
         tags:
             - { name: kernel.event_subscriber }
 
