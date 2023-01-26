@@ -1,0 +1,5 @@
+api_controllers:
+    resource: '../../Controller/'
+    prefix: '/api'
+    name_prefix: 'api_'
+    type: attribute
