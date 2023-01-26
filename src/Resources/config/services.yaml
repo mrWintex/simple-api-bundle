@@ -2,9 +2,9 @@ services:
     _defaults:
         autowire: true
         autoconfigure: true
-        
-    wsab.service.api-endpoint-validator:
-        class: Wintex\SimpleApiBundle\Service\ApiEndpointValidator
+
+    wsab.app:
+        resource: '../Service/'
 
     wsab.error.subscriber:
         class: Wintex\SimpleApiBundle\EventSubscriber\ExceptionSubscriber
