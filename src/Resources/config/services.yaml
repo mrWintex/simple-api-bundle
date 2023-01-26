@@ -19,3 +19,5 @@ services:
         public: true
         autowire: false
         autoconfigure: false
+        calls:
+            - [setContainer, ["@service_container"]]
