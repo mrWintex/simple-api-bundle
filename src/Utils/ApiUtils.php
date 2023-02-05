@@ -1,29 +1,26 @@
 <?php
-namespace Wintex\SimpleApiBundle\Service;
+namespace Wintex\SimpleApiBundle\Utils;
 
-use Wintex\SimpleApiBundle\Annotations\ApiEndpoint;
-use Psr\Log\LoggerInterface;
-use ReflectionClass;
-use SebastianBergmann\Template\RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use TheSeer\Tokenizer\Exception;
+use Wintex\SimpleApiBundle\Annotations\ApiEndpoint;
 
-class ApiEndpointValidator
+class ApiUtils
 {
-    public function __construct(private LoggerInterface $logger){}
-    public function supports(string $entityClassName, Request $request)
+    public static function isApiRoute(Request $request) : bool
     {
-        $reflectionClass = new ReflectionClass($entityClassName);
+        return !preg_match('/\/wintex_api\//', $request->attributes->get("_route")) && $request->attributes->has("entity");
+    }
+
+    public static function supports(string $entityClassName, Request $request)
+    {
+        $reflectionClass = new \ReflectionClass($entityClassName);
 
         $apiAttributes = $reflectionClass->getAttributes(ApiEndpoint::class);
-        $currentRoute = $this->getCurrentRoute($request->get('_route'));
+        $currentRoute = self::getCurrentRoute($request->get('_route'));
 
         foreach($apiAttributes as $attribute) {
             $supportTypes = $attribute->getArguments();
-            
-            foreach ($supportTypes as $supportType)
-                $this->logger->info($supportType);
 
             if (in_array(ApiEndpoint::SUPPORT_ALL, $supportTypes) || in_array($currentRoute, $supportTypes)) {
                 return;
@@ -33,7 +30,7 @@ class ApiEndpointValidator
         throw new HttpException(501, "This method is not supported on this entity");
     }
 
-    public function getCurrentRoute(string $routeName)
+    public static function getCurrentRoute(string $routeName)
     {
         if ($routeName == null)
             throw new \Exception("RouteName not resolved!");

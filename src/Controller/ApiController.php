@@ -1,81 +1,90 @@
 <?php
 namespace Wintex\SimpleApiBundle\Controller;
 
+use Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-use Exception;
 use pmill\Doctrine\Hydrator\ArrayHydrator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends AbstractController
 {
-    #[Route('/{entity}', name: 'generic_get', methods: ["GET"])]
-    public function getAll(string $entityClass, ManagerRegistry $doctrine) : JsonResponse
+    private EntityManagerInterface $em;
+
+    public function __construct(ManagerRegistry $doctrine)
     {
-        $repository = $doctrine->getRepository($entityClass);
+        $this->em = $doctrine->getManager();
+    }
+
+    #[Route('/{entity}', name: 'generic_get', methods: ["GET"])]
+    public function getAll(string $entityClass, Request $request) : array
+    {
+        $repository = $this->em->getRepository($entityClass);
 
         $entities = $repository->findAll();
 
-        return $this->json($entities);
+        return $entities;
     }
 
     #[Route('/{entity}/{id}', name: 'generic_get_one', methods: ["GET"])]
-    public function getOne(string $entityClass, string|int $id, ManagerRegistry $doctrine) : JsonResponse
+    public function getOne(string $entityClass, string|int $id) : object
     {
-        $repository = $doctrine->getRepository($entityClass);
+        $repository = $this->em->getRepository($entityClass);
 
         $entity = $repository->find($id);
 
         if ($entity == null)
             throw new HttpException(404, "Entity with id {$id} not found!");
 
-        return $this->json($entity);
+        return $entity;
     }
 
     #[Route('/{entity}', name: 'generic_create', methods: ["POST"])]
-    public function create(string $entity, string $entityClass, Request $request, EntityManagerInterface $entityManager) : JsonResponse
+    public function create(string $entity, string $entityClass, Request $request) : array
     {
         $data = json_decode($request->getContent(), true);
-        $hydrator = new ArrayHydrator($entityManager);
+        $hydrator = new ArrayHydrator($this->em);
         $newEntity = $hydrator->hydrate($entityClass, $data);
 
-        $entityManager->persist($newEntity);
-        $entityManager->flush();
+        $this->em->persist($newEntity);
+        $this->em->flush();
 
-        return $this->json(["message" => "Successfully created {$entity} with id " . $newEntity->getId()]);
+
+        return ["message" => "Successfully created {$entity} with id " . $newEntity->getId()];
     }
 
-    #[Route('/{entity}/{id}', name: 'generic_delete', methods: ["DELETE"])]
-    public function delete(string $entityClass, string $entity, int|string $id, ManagerRegistry $doctrine) : JsonResponse
+    #[Route('/{entity}/{id}', name: 'generic_delete', methods: ["DELETE"], requirements: ["id" => '\d+'])]
+    public function delete(string $entityClass, string $entity, int|string $id) : array
     {
-        $entityManager = $doctrine->getManager();
-        $repository = $doctrine->getRepository($entityClass);
+        $repository = $this->em->getRepository($entityClass);
 
         $entityToDelete = $repository->find($id);
 
-        $entityManager->remove($entityToDelete);
-        $entityManager->flush();
+        if ($entity == null)
+            throw new HttpException(404, "Entity with id {$id} not found!");
 
-        return $this->json(["message" => "Successfully deleted {$entity} with id " . $id]);
+        $this->em->remove($entityToDelete);
+        $this->em->flush();
+
+        return ["message" => "Successfully deleted {$entity} with id " . $id];
     }
 
-    #[Route('/{entity}/{repoMethod}', name: "repository_method", requirements: ["repoMethod" => "@.+"], methods: ["GET"], priority: 100)]
-    public function repositoryMethod(string $entityClass, string $repoMethod, ManagerRegistry $doctrine, Request $request) : JsonResponse
+    #[Route('/{entity}/{method}', name: "repository_method", methods: ["GET"], requirements: ["method" => '\D+'], priority: 2)]
+    public function repositoryMethod(string $entityClass, string $method, Request $request) : array | object
     {
-        $manager = $doctrine->getManager();
-        $repository = $doctrine->getRepository($entityClass);
-        $repoMethod = ltrim($repoMethod, '@');
+        $repository = $this->em->getRepository($entityClass);
 
+        
         try {
-            $result = $repository->$repoMethod($request->query->all());
+            $callable = $this->getParameter('wintex_simple_api.entity_definitions')[$entityClass]['routes'][$method]['repository_method'];
+            $result = $repository->$callable($request->query->all());
         } catch (Exception $ex) {
-            throw new HttpException(400, $ex->getMessage());
+            throw new HttpException(400, "Problem occured while calling method {{$method}}");
         }
 
-        return $this->json($result);
+        return $result;
     }
 }

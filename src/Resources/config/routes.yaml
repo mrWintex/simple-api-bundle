@@ -1,5 +1,5 @@
 api_controllers:
     resource: '../../Controller/'
     prefix: '/api'
-    name_prefix: 'api_'
+    name_prefix: 'wintex_api_'
     type: attribute

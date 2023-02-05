@@ -1,21 +1,35 @@
 services:
     _defaults:
-        autowire: true
         autoconfigure: true
+        autowire: true
 
-    Wintex\SimpleApiBundle\Service\ApiEndpointValidator: ~
-
-    wsab.error.subscriber:
-        class: Wintex\SimpleApiBundle\EventSubscriber\ExceptionSubscriber
+    Wintex\SimpleApiBundle\EventSubscriber\ExceptionSubscriber:
         tags:
             - { name: kernel.event_subscriber }
 
-    wsab.request.subscriber:
-        class: Wintex\SimpleApiBundle\EventSubscriber\RequestSubscriber
+    Wintex\SimpleApiBundle\EventSubscriber\RequestSubscriber:
+        arguments:
+            - '@Wintex\SimpleApiBundle\Utils\ApiConfig'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    Wintex\SimpleApiBundle\EventSubscriber\ResponseSubscriber:
+        arguments:
+            - '@Wintex\SimpleApiBundle\Utils\ApiConfig'
+            - '@debug.serializer'
         tags:
             - { name: kernel.event_subscriber }
 
     Wintex\SimpleApiBundle\Controller\ApiController:
-        public: true
-        calls:
-            - [setContainer, ["@service_container"]]
+        arguments:
+            - '@Doctrine\Persistence\ManagerRegistry'
+
+    Wintex\SimpleApiBundle\Utils\ApiConfig:
+        arguments:
+            - '@Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface'
+
+    Wintex\SimpleApiBundle\Serializer\EntityNormalizer:
+        arguments:
+            - '@Symfony\Component\Serializer\Normalizer\ObjectNormalizer'
+        tags:
+            - { name: serializer.normalizer }

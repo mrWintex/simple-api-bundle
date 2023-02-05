@@ -1,38 +1,36 @@
 <?php
 namespace Wintex\SimpleApiBundle\EventSubscriber;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Wintex\SimpleApiBundle\Service\ApiEndpointValidator;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Translation\Exception\NotFoundResourceException;
+use Wintex\SimpleApiBundle\Utils\ApiConfig;
+use Wintex\SimpleApiBundle\Utils\ApiUtils;
 
 class RequestSubscriber implements EventSubscriberInterface
 {
-    private ApiEndpointValidator $apiValidator;
+    private ApiConfig $config;
 
-    public function __construct(ApiEndpointValidator $apiValidator)
+    public function __construct(ApiConfig $config)
     {
-        $this->apiValidator = $apiValidator;
+        $this->config = $config;
     }
 
     public function resolveApiEntity(RequestEvent $event)
     {
-        if (!preg_match('/\/api\//', $event->getRequest()))
-            return;
-        
-        if (!$event->getRequest()->attributes->has("entity"))
+        if (!ApiUtils::isApiRoute($event->getRequest()))
             return;
 
         $entityName = $event->getRequest()->attributes->get("entity");
-        $entityClassName = "App\\Entity\\" . str_replace(' ', '', ucwords(strtolower(str_replace('-', ' ', $entityName))));
+        $entityClassName = $this->config->getEntityNamespace() . str_replace(' ', '', ucwords(strtolower(str_replace('-', ' ', $entityName))));
 
         if(!\class_exists($entityClassName)) {
-            throw new HttpException(404, "entity {$entityName} not found!");
+            throw new HttpException(404, "Entity {$entityName} not found!");
         }
 
-        $this->apiValidator->supports($entityClassName, $event->getRequest());
+        ApiUtils::supports($entityClassName, $event->getRequest());
             
         $event->getRequest()->attributes->set("entityClass", $entityClassName);
     }

@@ -1,20 +1,22 @@
 <?php
 namespace Wintex\SimpleApiBundle\EventSubscriber;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Wintex\SimpleApiBundle\Utils\ApiUtils;
 
 class ExceptionSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private LoggerInterface $logger){ }
-
     public function onException(ExceptionEvent $event)
     {
         $exception = $event->getThrowable();
+
+        if (!($exception instanceof HttpException) || !ApiUtils::isApiRoute($event->getRequest()))
+            return;
 
         $response = new JsonResponse([
             'message'       => $exception->getMessage(),
